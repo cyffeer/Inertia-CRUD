@@ -13,6 +13,7 @@
                 <tr v-for="post in posts" :key="post.id" class="border-b border-gray-200 hover:bg-gray-50">
                     <td class="border border-gray-300 p-3">{{ post.title }}</td>
                     <td class="border border-gray-300 p-3">{{ post.body }}</td>
+                    <td class="border border-gray-300 p-3">{{ post.quantity }}</td>
                     <td class="border border-gray-300 p-3 flex space-x-2">
                         <button @click="deletePost(post.id)" class="bg-pink-500 text-white px-3 py-1 rounded hover:bg-red-700 transition">Delete</button>
                         <Link :href="`posts/${post.id}/edit`" class="text-pink-500 hover:text-red-700 transition">Edit</Link>
@@ -24,6 +25,7 @@
             <div class="flex space-x-2">
                 <input v-model="form.title" placeholder="Title" class="border border-gray-300 p-2 flex-1 rounded" />
                 <input v-model="form.body" placeholder="Body" class="border border-gray-300 p-2 flex-1 rounded" />
+                <input v-model="form.quantity" placeholder="Quantity" class="border border-gray-300 p-2 flex-1 rounded" />
                 <button type="submit" class="bg-pink-500 text-white px-4 py-2 rounded hover:bg-red-700 transition">{{ props.isUpdating ? 'Update' : 'Add' }} Post</button>
             </div>
         </form>
@@ -44,11 +46,12 @@
     },
   });
   
-const headers = ["Title", "Body", "Actions"];
+const headers = ["Title", "Body", "Quantity","Actions"];
 
 const form = useForm({
   title: "",
   body: "",
+  quantity: "",
   id: null,
 });
 
@@ -90,6 +93,7 @@ const updatePost = async () => {
 const editPost = (post) => {
   form.title = post.title;
   form.body = post.body;
+  form.quantity = post.quantity;
   form.id = post.id;
 };
 
