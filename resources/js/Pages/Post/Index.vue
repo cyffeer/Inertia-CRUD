@@ -1,4 +1,5 @@
 <template>
+  <AuthenticatedLayout>
     <div class="p-6 bg-gray-100 rounded-lg shadow-md">
         <h1 class="text-3xl font-bold mb-6 text-center">My Inertia CRUD</h1>
         <table class="min-w-full border-collapse border border-gray-300">
@@ -30,10 +31,12 @@
             </div>
         </form>
     </div>
+  </AuthenticatedLayout>
 </template>
   
   <script setup>
   import { onMounted } from "vue";
+  import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
   import { Link, useForm } from "@inertiajs/vue3";
   const props = defineProps({
     posts: {
