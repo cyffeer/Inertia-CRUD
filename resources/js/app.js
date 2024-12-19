@@ -1,5 +1,7 @@
 import '../css/app.css';
 import './bootstrap';
+import 'core-js/stable'; 
+import 'regenerator-runtime/runtime';
 
 import { createInertiaApp } from '@inertiajs/vue3';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
