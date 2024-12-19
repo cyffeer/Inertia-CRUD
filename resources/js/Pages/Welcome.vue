@@ -8,6 +8,8 @@ const { props } = usePage();
 </script>
 
 <template>
+
+  <Head title="Welcom to Inertia-CRUD" />
   
   <component :is="props.auth.user ? AuthenticatedLayout : GuestLayout">
     <div class="flex flex-col items-center justify-center min-h-screen bg-gray-100">

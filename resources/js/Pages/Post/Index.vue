@@ -1,4 +1,5 @@
 <template>
+  <Head title="Posts" />
   <AuthenticatedLayout>
     <div class="p-6 bg-gray-100 rounded-lg shadow-md">
         <h1 class="text-3xl font-bold mb-6 text-center">My Inertia CRUD</h1>
@@ -29,15 +30,18 @@
                 <input v-model="form.quantity" placeholder="Quantity" class="border border-gray-300 p-2 flex-1 rounded" />
                 <button type="submit" class="bg-pink-500 text-white px-4 py-2 rounded hover:bg-red-700 transition">{{ props.isUpdating ? 'Update' : 'Add' }} Post</button>
             </div>
+            <p v-if="errorMessage" class="text-red-500 mt-2">{{ errorMessage }}</p>
         </form>
     </div>
   </AuthenticatedLayout>
 </template>
   
   <script setup>
-  import { onMounted } from "vue";
+  import { onMounted, ref } from "vue";
   import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
   import { Link, useForm } from "@inertiajs/vue3";
+  import { Head } from '@inertiajs/vue3';
+
   const props = defineProps({
     posts: {
       type: Array,
@@ -58,6 +62,8 @@ const form = useForm({
   id: null,
 });
 
+const errorMessage = ref("");
+
 const deletePost = async (id) => {
     try {
         await form.delete(`posts/${id}`);
@@ -72,17 +78,23 @@ const resetForm = () => {
 };
 
 const submit = () => {
+   
+  if (!form.title || !form.body || !form.quantity) {
+    errorMessage.value = "Please fill in all fields to add a post.";
+    return;
+  }
+  errorMessage.value = "";
   if (props.isUpdating) {
     updatePost();
   } else {
     addPost();
   }
-  resetForm(); // Reset the form after submission
+  resetForm(); 
 };
 
-// New methods for adding and updating posts
+
 const addPost = () => {
-  form.post('/posts'); // Adjust the URL as necessary
+  form.post('/posts'); 
 };
 
 const updatePost = async () => {

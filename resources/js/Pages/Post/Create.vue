@@ -29,13 +29,13 @@ import { useForm } from "@inertiajs/vue3";
 
 const props = defineProps(['post']);
 const form = useForm({
-    title: props.post.title, // Initialize with current post title
+    title: props.post.title, 
     body: props.post.body,  
-    quantity: props.post.quantity,  // Initialize with current post body
+    quantity: props.post.quantity,  
 });
 
-// Update the submit function to handle updates
+
 const submit = () => {
-    form.put(`/posts/${props.post.id}`); // Use PUT for updating the existing post
+    form.put(`/posts/${props.post.id}`);
 };
 </script>
