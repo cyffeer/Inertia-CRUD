@@ -23,10 +23,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::resource('posts', PostController::class);
+    Route::get('/api/posts', [PostController::class, 'index']);
+    Route::get('/posts/{post}/edit', [PostController::class, 'edit'])->name('posts.edit'); // Ensure this route is set up
+    
 });
-
-Route::resource('posts', PostController::class);
-
-Route::get('/post', [PostController::class, 'index']);
 
 require __DIR__.'/auth.php';

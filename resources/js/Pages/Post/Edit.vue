@@ -1,9 +1,9 @@
 <template>
-    <Head title="Create" />
+    <Head title="Edit" />
     <AuthenticatedLayout>
         <div class="py-12">
             <div class="mx-auto max-w-2xl sm:px-6 lg:px-4">
-                <h1 class="text-2xl font-bold mb-4">Create Post</h1>
+                <h1 class="text-2xl font-bold mb-4">Edit Post</h1>
                 <form @submit.prevent="submit" class="space-y-4 bg-white p-6 rounded-lg shadow-md">
                     <div>
                         <label for="title" class="block text-sm font-medium text-gray-700">Title</label>
@@ -25,7 +25,7 @@
                         />
                         <span v-if="errorMessage" class="text-red-500 text-sm">{{ errorMessage }}</span>
                     </div>
-                    <button type="submit" class="mt-2 px-4 py-2 bg-pink-500 hover:bg-red-700 text-white rounded-md transition duration-200">Create</button>
+                    <button type="submit" class="mt-2 px-4 py-2 bg-pink-500 hover:bg-red-700 text-white rounded-md transition duration-200">Submit</button>
                 </form>
             </div>
         </div>
@@ -33,41 +33,43 @@
 </template>
 
 <script setup>
-import { Head } from '@inertiajs/vue3';
 import { ref } from "vue";
 import { useForm } from "@inertiajs/vue3";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
+import { Head } from '@inertiajs/vue3';
 
+const props = defineProps(['post']);
 const form = useForm({
-  title: "",
-  body: "",
-  quantity: "",
+    title: props.post.title, 
+    body: props.post.body,  
+    quantity: props.post.quantity,  
 });
 
 const errorMessage = ref("");
 
 const submit = () => {
+    
+    if (!form.title || !form.body || !form.quantity) {
+        errorMessage.value = "Please fill in all fields to edit the post.";
+        return;
+    }
 
-  if (!form.title || !form.body || !form.quantity) {
-    errorMessage.value = "Please fill in all fields to add a post.";
-    return;
-  }
+  
+    if (isNaN(form.quantity)) {
+        errorMessage.value = "Quantity must be a valid number.";
+        return;
+    }
 
- 
-  if (isNaN(form.quantity)) {
-    errorMessage.value = "Quantity must be a valid number.";
-    return;
-  }
-
-  errorMessage.value = "";
-  form.post("/posts");
+    errorMessage.value = "";
+    form.put(`/posts/${props.post.id}`);
 };
 
+
 const validateQuantity = () => {
-  if (isNaN(form.quantity)) {
-    errorMessage.value = "Quantity must be a valid number.";
-  } else {
-    errorMessage.value = "";
-  }
+    if (isNaN(form.quantity)) {
+        errorMessage.value = "Quantity must be a valid number.";
+    } else {
+        errorMessage.value = "";
+    }
 };
 </script>
