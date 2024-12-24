@@ -25,7 +25,11 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     Route::resource('posts', PostController::class);
     Route::get('/api/posts', [PostController::class, 'index']);
-    Route::get('/posts/{post}/edit', [PostController::class, 'edit'])->name('posts.edit'); // Ensure this route is set up
+    Route::get('/posts/{post}/edit', [PostController::class, 'edit'])->name('posts.edit'); 
+    Route::get('/posts/show', [PostController::class, 'show'])->name('posts.show');
+    Route::delete('/posts/{id}', [PostController::class, 'destroy'])->name('posts.destroy');
+
+
     
 });
 

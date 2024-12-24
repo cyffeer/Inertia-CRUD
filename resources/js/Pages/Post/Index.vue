@@ -5,7 +5,7 @@
       <h1 class="text-3xl font-bold mb-6 text-center">My Inertia CRUD</h1>
 
       <!-- Search Bar -->
-      <div class="mb-4 ">
+      <div class="mb-5">
         <input 
           v-model="filterUser"
           type="text"
@@ -57,7 +57,7 @@
         <button 
           @click="goToPage(posts.prev_page_url)" 
           :disabled="!posts.prev_page_url" 
-          class="px-4 py-2 bg-pink-500 text-white rounded hover:bg-red-700 transition">
+          class="px-3 py-2 bg-pink-500 text-white rounded hover:bg-red-700 transition">
           Previous
         </button>
 
@@ -68,8 +68,17 @@
         <button 
           @click="goToPage(posts.next_page_url)" 
           :disabled="!posts.next_page_url" 
-          class="px-4 py-2 bg-pink-500 text-white rounded hover:bg-red-700 transition">
+          class="px-6 py-2 bg-pink-500 text-white rounded hover:bg-red-700 transition">
           Next
+        </button>
+      </div>
+
+      <!-- View All Posts Button -->
+      <div class="text-center">
+        <button 
+          @click="viewAllPosts"
+          class="px-3 py-1 bg-pink-500 text-white rounded hover:bg-pink-700 transition">
+          View All Posts
         </button>
       </div>
     </div>
@@ -77,11 +86,11 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from "vue";
+import { ref, computed } from "vue";
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { useForm } from "@inertiajs/vue3";
-import { Head } from '@inertiajs/vue3';
 import { Inertia } from '@inertiajs/inertia';
+import { Head } from '@inertiajs/vue3';
 
 const props = defineProps({
   posts: {
@@ -89,7 +98,7 @@ const props = defineProps({
     default: () => ({ data: [], prev_page_url: null, next_page_url: null, current_page: 1, last_page: 1 }),
   },
   authUser: {
-    type: Object, 
+    type: Object,
     required: true,
   }
 });
@@ -119,7 +128,12 @@ const filteredPosts = computed(() => {
 // Delete Post
 const deletePost = async (id) => {
   try {
-    await form.delete(`posts/${id}`);
+    await Inertia.delete(`/posts/${id}`, {
+      onSuccess: () => {
+        // Update the posts after successful deletion without refreshing the page
+        allPosts.value = allPosts.value.filter(post => post.id !== id);
+      }
+    });
   } catch (error) {
     console.error("Error deleting post:", error);
   }
@@ -155,9 +169,12 @@ const handleEditClick = (post) => {
   if (post.user && post.user.id !== props.authUser.id) {
     warningMessage.value = "You cannot edit another user's post.";
   } else {
-    console.log(Inertia);
     Inertia.visit(route('posts.edit', { post: post.id }));
   }
 };
-</script>
 
+// View All Posts
+const viewAllPosts = () => {
+  Inertia.visit(route('posts.show'));
+};
+</script>

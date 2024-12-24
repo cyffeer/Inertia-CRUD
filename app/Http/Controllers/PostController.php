@@ -113,5 +113,15 @@ class PostController extends Controller
 
         return redirect()->back()->with('success', 'Post deleted successfully');
     }
+
+    public function show()
+{
+    $posts = Post::with('user')->get()->toArray(); // Convert the collection to an array
+    
+    return Inertia::render('Post/Show', [
+        'posts' => $posts,
+        'authUser' => Auth::user(),
+    ]);
 }
 
+}
