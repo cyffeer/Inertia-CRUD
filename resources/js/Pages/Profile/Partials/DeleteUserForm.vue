@@ -24,8 +24,14 @@ const confirmUserDeletion = () => {
 const deleteUser = () => {
     form.delete(route('profile.destroy'), {
         preserveScroll: true,
-        onSuccess: () => closeModal(),
-        onError: () => passwordInput.value.focus(),
+        onSuccess: () => {
+            closeModal();
+            alert('Your account has been marked for deletion.');
+        },
+        onError: () => {
+            passwordInput.value.focus();
+            alert('Failed to delete your account. Please check your password and try again.');
+        },
         onFinish: () => form.reset(),
     });
 };
@@ -46,9 +52,8 @@ const closeModal = () => {
             </h2>
 
             <p class="mt-1 text-sm text-gray-600">
-                Once your account is deleted, all of its resources and data will
-                be permanently deleted. Before deleting your account, please
-                download any data or information that you wish to retain.
+                Once your account is marked for deletion, all of its resources and data will
+                no longer be accessible. Please ensure you download any important data before proceeding.
             </p>
         </header>
 
@@ -63,9 +68,7 @@ const closeModal = () => {
                 </h2>
 
                 <p class="mt-1 text-sm text-gray-600">
-                    Once your account is deleted, all of its resources and data
-                    will be permanently deleted. Please enter your password to
-                    confirm you would like to permanently delete your account.
+                    Please enter your password to confirm the deletion.
                 </p>
 
                 <div class="mt-6">

@@ -19,7 +19,6 @@ defineProps({
 const form = useForm({
     email: '',
     password: '',
-    remember: false,
 });
 
 const submit = () => {
@@ -63,11 +62,6 @@ const submit = () => {
                     autocomplete="current-password"
                 />
                 <InputError class="mt-2" :message="form.errors.password" />
-            </div>
-
-            <div class="flex items-center">
-                <Checkbox name="remember" v-model:checked="form.remember" />
-                <span class="ms-2 text-sm text-gray-600">Remember me</span>
             </div>
 
             <PrimaryButton

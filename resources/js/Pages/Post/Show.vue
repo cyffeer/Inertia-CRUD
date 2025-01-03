@@ -2,7 +2,7 @@
     <Head title="Posts" />
     <AuthenticatedLayout>
       <div class="p-6 bg-gray-100 rounded-lg shadow-md">
-        <h1 class="text-3xl font-bold mb-6 text-center">My Inertia CRUD</h1>
+        <h1 class="text-3xl font-bold mb-6 text-center">Inertia CRUD</h1>
         <h2 class="text-xl mb-6 text-center">View All</h2>
   
         <!-- Search Bar -->
@@ -31,12 +31,12 @@
           </thead>
           <tbody>
             <tr v-for="post in filteredPosts" :key="post.id" class="border-b border-gray-200 hover:bg-gray-50">
-              <td class="border border-gray-300 p-3">{{ post.title }}</td>
-              <td class="border border-gray-300 p-3">{{ post.body }}</td>
-              <td class="border border-gray-300 p-3">{{ post.quantity }}</td>
               <td class="border border-gray-300 p-3">
                 {{ post.user ? post.user.id : 'Unknown' }} - {{ post.user ? post.user.name : 'Unknown' }}
               </td>
+              <td class="border border-gray-300 p-3">{{ post.title }}</td>
+              <td class="border border-gray-300 p-3">{{ post.body }}</td>
+              <td class="border border-gray-300 p-3">{{ post.quantity }}</td>
               <td class="border border-gray-300 p-3 flex space-x-2">
                 <button 
                   @click="handlePostClick(post)" 
@@ -84,7 +84,7 @@
   });
   
   // Variables and refs
-  const headers = ["Title", "Body", "Quantity", "User's ID", "Actions"];
+  const headers = ["User's ID", "Title", "Body", "Quantity", "Actions"];
   const form = useForm({
     title: "",
     body: "",

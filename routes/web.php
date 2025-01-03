@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PostController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -27,7 +28,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/api/posts', [PostController::class, 'index']);
     Route::get('/posts/{post}/edit', [PostController::class, 'edit'])->name('posts.edit'); 
     Route::get('/posts/show', [PostController::class, 'show'])->name('posts.show');
-    Route::delete('/posts/{id}', [PostController::class, 'destroy'])->name('posts.destroy');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
+
 
 
     

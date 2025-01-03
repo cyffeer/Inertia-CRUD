@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Routing\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth; 
+use App\Models\Activity;
 use App\Models\Post;
 use Inertia\Inertia;
 
@@ -62,6 +63,13 @@ class PostController extends Controller
         $post->user_id = Auth::id(); 
         $post->save();
 
+        Activity::create([
+            'user_id' => Auth::id(),
+            'action' => 'created',
+            'post_id' => $post->id,
+        ]);
+    
+
         return redirect()->route('posts.index')->with('success', 'Post created successfully');
     }
 
@@ -97,6 +105,12 @@ class PostController extends Controller
 
         $post->update($request->all());
 
+        Activity::create([
+            'user_id' => Auth::id(),
+            'action' => 'updated',
+            'post_id' => $post->id,
+        ]);
+
         return redirect()->route('posts.index')->with('success', 'Post updated successfully');
     }
 
@@ -110,6 +124,12 @@ class PostController extends Controller
         }
 
         $post->delete();
+
+        Activity::create([
+            'user_id' => Auth::id(),
+            'action' => 'deleted',
+            'post_id' => $post->id,
+        ]);
 
         return redirect()->back()->with('success', 'Post deleted successfully');
     }
