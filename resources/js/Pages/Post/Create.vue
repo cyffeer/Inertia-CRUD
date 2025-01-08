@@ -52,7 +52,7 @@ const form = useForm({
   title: "",
   body: "",
   quantity: "",
-  published_at: '', // Ensure this field is included
+  published_at: '', 
 });
 
 const errorMessage = ref("");
@@ -69,7 +69,12 @@ const submit = () => {
   }
 
   errorMessage.value = "";
-  form.post("/posts");
+  form.post("/posts", {
+    onSuccess: () => {
+      alert("Your post has been created successfully!");
+      form.reset();
+    }
+  });
 };
 
 const validateQuantity = () => {

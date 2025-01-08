@@ -21,22 +21,26 @@ class PostController extends Controller
      */
     public function index(Request $request)
     {
-        $userId = $request->input('user_id', '');
-        $postsQuery = Post::with('user');
+    $userId = $request->input('user_id', '');
+    $perPage = (int) $request->input('per_page', session('per_page', 5)); // Default to 5 items per page
+    session(['per_page' => $perPage]); // Store per_page in session
 
-        if ($userId) {
-            $postsQuery->whereHas('user', function ($query) use ($userId) {
-                $query->where('id', 'like', $userId . '%');
-            });
-        }
+    $postsQuery = Post::with('user');
 
-        // Paginate
-        $posts = $postsQuery->paginate(5);
-        
-        return Inertia::render('Post/Index', [
-            'posts' => $posts,
-            'authUser' => Auth::user(),
-        ]);
+    if ($userId) {
+        $postsQuery->whereHas('user', function ($query) use ($userId) {
+            $query->where('id', 'like', $userId . '%');
+        });
+    }
+
+    // Paginate with the selected per_page value
+    $posts = $postsQuery->paginate($perPage);
+
+    return Inertia::render('Post/Index', [
+        'posts' => $posts,
+        'authUser' => Auth::user(),
+        'perPage' => $perPage, // Pass the per_page value to the view
+    ]);
     }
 
     /**

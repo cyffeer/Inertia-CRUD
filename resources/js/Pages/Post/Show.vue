@@ -5,21 +5,12 @@
       <h1 class="text-3xl font-bold mb-6 text-center">Inertia CRUD</h1>
       <h2 class="text-xl mb-6 text-center">View All</h2>
 
-      <!-- Search Bar for Title -->
+      <!-- Search Bar -->
       <div class="mb-3">
         <input 
-          v-model="filterUserTitle"
+          v-model="filterText"
           type="text"
-          placeholder="Filter by Title"
-          class="rounded-md border-gray-300 shadow-sm focus:border-pink-500 focus:ring-pink-500"
-        />
-      </div>
-      <!-- Search Bar for Body -->
-      <div class="mb-3">
-        <input 
-          v-model="filterUserBody"
-          type="text"
-          placeholder="Filter by Body"
+          placeholder="Search by Title or Body"
           class="rounded-md border-gray-300 shadow-sm focus:border-pink-500 focus:ring-pink-500"
         />
       </div>
@@ -97,18 +88,16 @@ const props = defineProps({
 // Variables and refs
 const headers = ["User's ID", "Title", "Body", "Quantity", "Date", "Actions"];
 const warningMessage = ref("");
-const filterUserTitle = ref("");
-const filterUserBody = ref("");
+const filterText = ref("");
 
 // Filtered posts
 const filteredPosts = computed(() => {
-  const filterTitle = filterUserTitle.value.trim().toLowerCase();
-  const filterBody = filterUserBody.value.trim().toLowerCase();
+  const filter = filterText.value.trim().toLowerCase();
 
   return props.posts.filter(post => {
-    const titleMatch = post.title.toLowerCase().startsWith(filterTitle);
-    const bodyMatch = post.body.toLowerCase().startsWith(filterBody);
-    return titleMatch && bodyMatch;
+    const titleMatch = post.title.toLowerCase().includes(filter);
+    const bodyMatch = post.body.toLowerCase().includes(filter);
+    return titleMatch || bodyMatch;
   });
 });
 
@@ -116,11 +105,11 @@ const filteredPosts = computed(() => {
 const deletePost = async (id) => {
   try {
     await axios.delete(`/posts/${id}`);
-    // Update the posts after successful deletion without refreshing the page
     props.posts = props.posts.filter(post => post.id !== id);
     
     // Show success message
     alert('The post has been deleted successfully.');
+    window.location.reload();
   } catch (error) {
     console.error("Error deleting post:", error);
   }

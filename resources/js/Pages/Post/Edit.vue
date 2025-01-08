@@ -48,22 +48,23 @@ const form = useForm({
 const errorMessage = ref("");
 
 const submit = () => {
-    
     if (!form.title || !form.body || !form.quantity) {
         errorMessage.value = "Please fill in all fields to edit the post.";
         return;
     }
 
-  
     if (isNaN(form.quantity)) {
         errorMessage.value = "Quantity must be a valid number.";
         return;
     }
 
     errorMessage.value = "";
-    form.put(`/posts/${props.post.id}`);
+    form.put(`/posts/${props.post.id}`, {
+        onSuccess: () => {
+            alert("Your post has been updated successfully!");
+        }
+    });
 };
-
 
 const validateQuantity = () => {
     if (isNaN(form.quantity)) {

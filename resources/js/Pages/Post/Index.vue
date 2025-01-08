@@ -4,23 +4,22 @@
     <div class="p-6 bg-gray-100 rounded-lg shadow-md">
       <h1 class="text-3xl font-bold mb-6 text-center">Inertia CRUD</h1>
 
-      <!-- Search Bar for Title -->
+      <!-- Search Bar -->
       <div class="mb-3">
         <input 
-          v-model="filterUserTitle"
+          v-model="filterText"
           type="text"
-          placeholder="Filter by Title"
+          placeholder="Search by Title or Body"
           class="rounded-md border-gray-300 shadow-sm focus:border-pink-500 focus:ring-pink-500"
         />
       </div>
-      <!-- Search Bar for Body -->
+
+      <!-- Items Per Page Form -->
       <div class="mb-3">
-        <input 
-          v-model="filterUserBody"
-          type="text"
-          placeholder="Filter by Body"
-          class="rounded-md border-gray-300 shadow-sm focus:border-pink-500 focus:ring-pink-500"
-        />
+        <label for="perPage" class="mr-2">Items per page:</label>
+        <select id="perPage" v-model.number="perPage" class="rounded-md border-gray-300 shadow-sm focus:border-pink-500 focus:ring-pink-500">
+          <option v-for="option in perPageOptions" :key="option" :value="option">{{ option }}</option>
+        </select>
       </div>
 
       <!-- Warning Message -->
@@ -63,7 +62,7 @@
       </table>
 
       <!-- Pagination -->
-      <div v-if="!filterUser.trim()" class="flex justify-between items-center mt-4">
+      <div v-if="!filterText.trim()" class="flex justify-between items-center mt-4">
         <button 
           @click="goToPage(posts.prev_page_url)" 
           :disabled="!posts.prev_page_url" 
@@ -96,10 +95,9 @@
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
+import { ref, computed, watch } from "vue";
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { useForm } from "@inertiajs/vue3";
-import { Inertia } from '@inertiajs/inertia';
 import { Head } from '@inertiajs/vue3';
 import axios from 'axios';
 import { format } from 'date-fns'; 
@@ -112,6 +110,10 @@ const props = defineProps({
   authUser: {
     type: Object,
     required: true,
+  },
+  perPage: {
+    type: Number,
+    default: 5,
   }
 });
 
@@ -124,20 +126,24 @@ const form = useForm({
   id: null,
 });
 const warningMessage = ref("");
-const filterUser = ref(""); 
+const filterText = ref(""); 
 const allPosts = ref(props.posts.data); 
-const filterUserTitle = ref("");
-const filterUserBody = ref("");
+const perPage = ref(props.perPage);
+const perPageOptions = [3, 5, 8, 10];
+
+// Update for page
+watch(perPage, (newPerPage) => {
+  window.location.href = `/posts?per_page=${newPerPage}`;
+});
 
 // Filtered posts
 const filteredPosts = computed(() => {
-  const filterTitle = filterUserTitle.value.trim().toLowerCase();
-  const filterBody = filterUserBody.value.trim().toLowerCase();
+  const filter = filterText.value.trim().toLowerCase();
 
   return allPosts.value.filter(post => {
-    const titleMatch = post.title.toLowerCase().startsWith(filterTitle);
-    const bodyMatch = post.body.toLowerCase().startsWith(filterBody);
-    return titleMatch && bodyMatch;
+    const titleMatch = post.title.toLowerCase().includes(filter);
+    const bodyMatch = post.body.toLowerCase().includes(filter);
+    return titleMatch || bodyMatch;
   });
 });
 
@@ -149,16 +155,17 @@ const deletePost = async (id) => {
     allPosts.value = allPosts.value.filter(post => post.id !== id);
     
     // Show success message
-    alert('The post has been deleted successfully.');
+    warningMessage.value = 'The post has been deleted successfully.';
   } catch (error) {
     console.error("Error deleting post:", error);
+    warningMessage.value = 'Error deleting post. Please try again.';
   }
 };
 
 // Pagination
 const goToPage = (url) => {
   if (url) {
-    form.get(url);
+    window.location.href = url;
   }
 };
 
@@ -174,10 +181,8 @@ const handlePostClick = (post) => {
 const handleEditClick = (post) => {
   if (!props.authUser) {
     warningMessage.value = "User not authenticated";
-    return; // Exit the function if user is not authenticated
+    return; 
   }
-
-  // Only proceed to the edit page if no issues
   window.location.href = `/posts/${post.id}/edit`;
 };
 

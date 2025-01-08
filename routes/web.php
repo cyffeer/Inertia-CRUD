@@ -32,6 +32,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/posts/{post}/edit', [PostController::class, 'edit'])->name('posts.edit');
     //delete
     Route::delete('/posts/{id}', [PostController::class, 'destroy'])->name('posts.destroy');
+    //index
+    Route::get('/posts', [PostController::class, 'index'])->name('posts.index');
     //view all
     Route::get('/posts/show', [PostController::class, 'show'])->name('posts.show');
     //dashboard
