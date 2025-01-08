@@ -26,6 +26,7 @@
     "laravel-vite-plugin": "^0.7.8",
     "regenerator-runtime": "^0.14.1",
     "structured-clone": "^0.2.2",
-    "vite": "^4.4.9"
+    "vite": "^4.4.9",
+    "vue-router": "^4.0.13"
   }
 }

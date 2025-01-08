@@ -20,25 +20,25 @@ class PostController extends Controller
      * Display a listing of the posts.
      */
     public function index(Request $request)
-{
-    
-    $userId = $request->input('user_id', '');
-    $postsQuery = Post::with('user');
+    {
+        $userId = $request->input('user_id', '');
+        $postsQuery = Post::with('user');
 
-    if ($userId) {
-        $postsQuery->whereHas('user', function ($query) use ($userId) {
-            $query->where('id', 'like', $userId . '%');
-        });
+        if ($userId) {
+            $postsQuery->whereHas('user', function ($query) use ($userId) {
+                $query->where('id', 'like', $userId . '%');
+            });
+        }
+
+        // Paginate
+        $posts = $postsQuery->paginate(5);
+        
+        return Inertia::render('Post/Index', [
+            'posts' => $posts,
+            'authUser' => Auth::user(),
+        ]);
     }
 
-    // Paginate
-    $posts = $postsQuery->paginate(5);
-    
-    return Inertia::render('Post/Index', [
-        'posts' => $posts,
-        'authUser' => Auth::user(),
-    ]);
-}
     /**
      * Show the form for creating a new post.
      */
@@ -56,6 +56,7 @@ class PostController extends Controller
             'title' => 'required|string|max:255',
             'body' => 'required|string',
             'quantity' => 'required|integer',
+            'published_at' => 'nullable|date',
         ]);
 
         // New post 
@@ -78,11 +79,6 @@ class PostController extends Controller
      */
     public function edit(Post $post)
     {
-        // Owned post by users to edit 
-        if ($post->user_id !== Auth::id()) {
-            return redirect()->route('posts.index')->with('error', 'You cannot edit this post.');
-        }
-
         return Inertia::render('Post/Edit', [
             'post' => $post,
         ]);
@@ -97,11 +93,8 @@ class PostController extends Controller
             'title' => 'required|string|max:255',
             'body' => 'required|string',
             'quantity' => 'required|integer',
+            'published_at' => 'nullable|date',
         ]);
-
-        if ($post->user_id !== Auth::id()) {
-            return redirect()->route('posts.index')->with('error', 'Unauthorized');
-        }
 
         $post->update($request->all());
 
@@ -119,10 +112,6 @@ class PostController extends Controller
      */
     public function destroy(Post $post)
     {
-        if ($post->user_id !== Auth::id()) {
-            return redirect()->back()->with('error', 'Unauthorized');
-        }
-
         $post->delete();
 
         Activity::create([
@@ -131,17 +120,16 @@ class PostController extends Controller
             'post_id' => $post->id,
         ]);
 
-        return redirect()->back()->with('success', 'Post deleted successfully');
+        return response()->json(['message' => 'Post deleted successfully']);
     }
 
     public function show()
-{
-    $posts = Post::with('user')->get()->toArray(); // Convert the collection to an array
-    
-    return Inertia::render('Post/Show', [
-        'posts' => $posts,
-        'authUser' => Auth::user(),
-    ]);
-}
-
+    {
+        $posts = Post::with('user')->get()->toArray(); // Convert the collection to an array
+        
+        return Inertia::render('Post/Show', [
+            'posts' => $posts,
+            'authUser' => Auth::user(),
+        ]);
+    }
 }

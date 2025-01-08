@@ -21,14 +21,22 @@ Route::get('/dashboard', function () {
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
+    //profile
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     Route::resource('posts', PostController::class);
+    //posts
     Route::get('/api/posts', [PostController::class, 'index']);
-    Route::get('/posts/{post}/edit', [PostController::class, 'edit'])->name('posts.edit'); 
+    //edit
+    Route::get('/posts/{post}/edit', [PostController::class, 'edit'])->name('posts.edit');
+    //delete
+    Route::delete('/posts/{id}', [PostController::class, 'destroy'])->name('posts.destroy');
+    //view all
     Route::get('/posts/show', [PostController::class, 'show'])->name('posts.show');
+    //dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
+
 
 
 

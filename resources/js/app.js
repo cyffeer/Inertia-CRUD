@@ -12,11 +12,15 @@ const appName = import.meta.env.VITE_APP_NAME || 'Inertia-CRUD';
 
 createInertiaApp({
     title: (title) => `${title}`,
-    resolve: (name) =>
-        resolvePageComponent(
-            `./Pages/${name}.vue`,
+    resolve: (name) => {
+        console.log('Resolving page component for:', name);
+        const componentPath = `./Pages/${name}.vue`;
+        console.log('Component path:', componentPath);  // Log the full path
+        return resolvePageComponent(
+            componentPath,
             import.meta.glob('./Pages/**/*.vue'),
-        ),
+        );
+    },
     setup({ el, App, props, plugin }) {
         return createApp({ render: () => h(App, props) })
             .use(plugin)
