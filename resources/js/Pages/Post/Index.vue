@@ -8,6 +8,7 @@
       <div class="mb-3">
         <input 
           v-model="filterText"
+          @input="fetchPosts"
           type="text"
           placeholder="Search by Title or Body"
           class="rounded-md border-gray-300 shadow-sm focus:border-pink-500 focus:ring-pink-500"
@@ -17,7 +18,7 @@
       <!-- Items Per Page Form -->
       <div class="mb-3">
         <label for="perPage" class="mr-2">Items per page:</label>
-        <select id="perPage" v-model.number="perPage" class="rounded-md border-gray-300 shadow-sm focus:border-pink-500 focus:ring-pink-500">
+        <select id="perPage" v-model.number="perPage" @change="fetchPosts" class="rounded-md border-gray-300 shadow-sm focus:border-pink-500 focus:ring-pink-500">
           <option v-for="option in perPageOptions" :key="option" :value="option">{{ option }}</option>
         </select>
       </div>
@@ -37,7 +38,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="post in filteredPosts" :key="post.id" class="border-b border-gray-200 hover:bg-gray-50">
+          <tr v-for="post in posts.data" :key="post.id" class="border-b border-gray-200 hover:bg-gray-50">
             <td class="border border-gray-300 p-3">
               {{ post.user ? post.user.id : 'Unknown' }} - {{ post.user ? post.user.name : 'Unknown' }}
             </td>
@@ -62,45 +63,18 @@
       </table>
 
       <!-- Pagination -->
-      <div v-if="!filterText.trim()" class="flex justify-between items-center mt-4">
-        <button 
-          @click="goToPage(posts.prev_page_url)" 
-          :disabled="!posts.prev_page_url" 
-          class="px-3 py-2 bg-pink-500 text-white rounded hover:bg-red-700 transition">
-          Previous
-        </button>
-
-        <span class="self-center text-gray-700">
-          Page {{ posts.current_page }} of {{ posts.last_page }}
-        </span>
-
-        <button 
-          @click="goToPage(posts.next_page_url)" 
-          :disabled="!posts.next_page_url" 
-          class="px-6 py-2 bg-pink-500 text-white rounded hover:bg-red-700 transition">
-          Next
-        </button>
-      </div>
-
-      <!-- View All Posts Button -->
-      <div class="text-center">
-        <button 
-          @click="viewAllPosts"
-          class="px-3 py-1 bg-pink-500 text-white rounded hover:bg-pink-700 transition">
-          View All Posts
-        </button>
-      </div>
+      <Pagination :page="posts.current_page" :totalPages="posts.last_page" :onPageChange="goToPage" />   
     </div>
   </AuthenticatedLayout>
 </template>
 
 <script setup>
-import { ref, computed, watch } from "vue";
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { useForm } from "@inertiajs/vue3";
+import { ref, watch } from "vue";
 import { Head } from '@inertiajs/vue3';
 import axios from 'axios';
 import { format } from 'date-fns'; 
+import Pagination from '@/Components/Pagination.vue';
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 
 const props = defineProps({
   posts: {
@@ -118,55 +92,45 @@ const props = defineProps({
 });
 
 const headers = ["User's ID", "Title", "Body", "Quantity", "Date", "Actions"];
-const form = useForm({
-  title: "",
-  body: "",
-  quantity: "",
-  published_at: "",
-  id: null,
-});
+const perPageOptions = [3, 5, 8, 10, 'All'];
+
 const warningMessage = ref("");
 const filterText = ref(""); 
-const allPosts = ref(props.posts.data); 
 const perPage = ref(props.perPage);
-const perPageOptions = [3, 5, 8, 10];
+const posts = ref(props.posts);
 
-// Update for page
+// Watch for changes to perPage and reload the page
 watch(perPage, (newPerPage) => {
-  window.location.href = `/posts?per_page=${newPerPage}`;
+  fetchPosts();
 });
 
-// Filtered posts
-const filteredPosts = computed(() => {
-  const filter = filterText.value.trim().toLowerCase();
+// Watch for changes to filterText and fetch filtered posts
+watch(filterText, (newFilterText) => {
+  fetchPosts();
+});
 
-  return allPosts.value.filter(post => {
-    const titleMatch = post.title.toLowerCase().includes(filter);
-    const bodyMatch = post.body.toLowerCase().includes(filter);
-    return titleMatch || bodyMatch;
+// Fetch posts based on filterText and perPage
+const fetchPosts = (page = 1) => {
+  axios.get('/search', {
+    params: {
+      q: filterText.value,
+      type: 'post',
+      per_page: perPage.value === 'All' ? 0 : perPage.value,
+      page: page
+    }
+  })
+  .then(response => {
+    posts.value = response.data;
+  })
+  .catch(error => {
+    console.error("Error fetching posts:", error);
+    warningMessage.value = 'Error fetching posts. Please try again.';
   });
-});
-
-// Delete Post
-const deletePost = async (id) => {
-  try {
-    await axios.delete(`/posts/${id}`);
-    // Update the posts after successful deletion without refreshing the page
-    allPosts.value = allPosts.value.filter(post => post.id !== id);
-    
-    // Show success message
-    warningMessage.value = 'The post has been deleted successfully.';
-  } catch (error) {
-    console.error("Error deleting post:", error);
-    warningMessage.value = 'Error deleting post. Please try again.';
-  }
 };
 
 // Pagination
-const goToPage = (url) => {
-  if (url) {
-    window.location.href = url;
-  }
+const goToPage = (page) => {
+  fetchPosts(page);
 };
 
 const handlePostClick = (post) => {
@@ -175,7 +139,17 @@ const handlePostClick = (post) => {
     return;
   }
 
-  deletePost(post.id);
+  if (confirm('Are you sure you want to delete this post?')) {
+    axios.delete(`/posts/${post.id}`)
+      .then(() => {
+        warningMessage.value = 'The post has been deleted successfully.';
+        fetchPosts();
+      })
+      .catch((error) => {
+        console.error("Error deleting post:", error);
+        warningMessage.value = 'Error deleting post. Please try again.';
+      });
+  }
 };
 
 const handleEditClick = (post) => {
@@ -184,11 +158,6 @@ const handleEditClick = (post) => {
     return; 
   }
   window.location.href = `/posts/${post.id}/edit`;
-};
-
-// View All Posts
-const viewAllPosts = () => {
-  window.location.href = '/posts/show';
 };
 
 // Format date
@@ -201,5 +170,4 @@ const formatDate = (dateString) => {
     return 'N/A'; 
   }
 };
-
 </script>

@@ -21,26 +21,19 @@ class PostController extends Controller
      */
     public function index(Request $request)
     {
-    $userId = $request->input('user_id', '');
-    $perPage = (int) $request->input('per_page', session('per_page', 5)); // Default to 5 items per page
-    session(['per_page' => $perPage]); // Store per_page in session
+        $perPage = (int) $request->input('per_page', session('per_page', 5)); // Default to 5 items per page
+        session(['per_page' => $perPage]); // Store per_page in session
 
-    $postsQuery = Post::with('user');
+        $postsQuery = Post::with('user');
 
-    if ($userId) {
-        $postsQuery->whereHas('user', function ($query) use ($userId) {
-            $query->where('id', 'like', $userId . '%');
-        });
-    }
+        // Paginate with the selected per_page value
+        $posts = $postsQuery->paginate($perPage);
 
-    // Paginate with the selected per_page value
-    $posts = $postsQuery->paginate($perPage);
-
-    return Inertia::render('Post/Index', [
-        'posts' => $posts,
-        'authUser' => Auth::user(),
-        'perPage' => $perPage, // Pass the per_page value to the view
-    ]);
+        return Inertia::render('Post/Index', [
+            'posts' => $posts,
+            'authUser' => Auth::user(),
+            'perPage' => $perPage, // Pass the per_page value to the view
+        ]);
     }
 
     /**
@@ -73,7 +66,6 @@ class PostController extends Controller
             'action' => 'created',
             'post_id' => $post->id,
         ]);
-    
 
         return redirect()->route('posts.index')->with('success', 'Post created successfully');
     }
@@ -127,7 +119,7 @@ class PostController extends Controller
         return response()->json(['message' => 'Post deleted successfully']);
     }
 
-    public function show()
+    /**public function show()
     {
         $posts = Post::with('user')->get()->toArray(); // Convert the collection to an array
         
@@ -136,4 +128,5 @@ class PostController extends Controller
             'authUser' => Auth::user(),
         ]);
     }
+        */
 }
