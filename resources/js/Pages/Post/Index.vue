@@ -8,9 +8,9 @@
       <div class="mb-3">
         <input 
           v-model="filterText"
-          @input="fetchPosts"
+          @input="debouncedSearch"
           type="text"
-          placeholder="Search by Title or Body"
+          placeholder="Search"
           class="rounded-md border-gray-300 shadow-sm focus:border-pink-500 focus:ring-pink-500"
         />
       </div>
@@ -18,7 +18,7 @@
       <!-- Items Per Page Form -->
       <div class="mb-3">
         <label for="perPage" class="mr-2">Items per page:</label>
-        <select id="perPage" v-model.number="perPage" @change="fetchPosts" class="rounded-md border-gray-300 shadow-sm focus:border-pink-500 focus:ring-pink-500">
+        <select id="perPage" v-model.number="perPage" @change="handlePerPageChange" class="rounded-md border-gray-300 shadow-sm focus:border-pink-500 focus:ring-pink-500">
           <option v-for="option in perPageOptions" :key="option" :value="option">{{ option }}</option>
         </select>
       </div>
@@ -69,7 +69,7 @@
 </template>
 
 <script setup>
-import { ref, watch } from "vue";
+import { ref } from "vue";
 import { Head } from '@inertiajs/vue3';
 import axios from 'axios';
 import { format } from 'date-fns'; 
@@ -94,15 +94,16 @@ axios.get('/api/auth-user')
     console.error("Error fetching authenticated user:", error);
   })
 
-// Watch for changes to perPage and reload the page
-watch(perPage, (newPerPage) => {
-  fetchPosts();
-});
-
-// Watch for changes to filterText and fetch filtered posts
-watch(filterText, (newFilterText) => {
-  fetchPosts();
-});
+// Debounce function to limit the number of times the search function is called
+const debounce = (func, delay) => {
+  let timeout;
+  return (...args) => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => {
+      func(...args);
+    }, delay);
+  };
+};
 
 // Fetch posts based on filterText and perPage
 const fetchPosts = (page = 1) => {
@@ -120,6 +121,19 @@ const fetchPosts = (page = 1) => {
     console.error("Error fetching posts:", error);
     warningMessage.value = 'Error fetching posts. Please try again.';
   });
+};
+
+// Handle search input
+const handleSearchInput = () => {
+  fetchPosts(1); // Reset to page 1 when search input changes
+};
+
+// Debounced search function
+const debouncedSearch = debounce(handleSearchInput, 300);
+
+// Handle items per page change
+const handlePerPageChange = () => {
+  fetchPosts(1); // Reset to page 1 when items per page changes
 };
 
 // Pagination

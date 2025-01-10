@@ -39,7 +39,10 @@ class PostController extends Controller
 
         $postsQuery = Post::with('user')
             ->where('title', 'like', "{$query}%")
-            ->orWhere('body', 'like', "{$query}%");
+            ->orWhere('body', 'like', "{$query}%")
+            ->orWhereHas('user', function ($q) use ($query) {
+                $q->where('name', 'like', "{$query}%");
+            });
 
         $posts = $postsQuery->paginate($perPage);
 
