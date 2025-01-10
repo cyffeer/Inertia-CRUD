@@ -76,28 +76,23 @@ import { format } from 'date-fns';
 import Pagination from '@/Components/Pagination.vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 
-const props = defineProps({
-  posts: {
-    type: Object,
-    default: () => ({ data: [], prev_page_url: null, next_page_url: null, current_page: 1, last_page: 1 }),
-  },
-  authUser: {
-    type: Object,
-    required: true,
-  },
-  perPage: {
-    type: Number,
-    default: 5,
-  }
-});
-
 const headers = ["User's ID", "Title", "Body", "Quantity", "Date", "Actions"];
 const perPageOptions = [3, 5, 8, 10, 'All'];
 
 const warningMessage = ref("");
 const filterText = ref(""); 
-const perPage = ref(props.perPage);
-const posts = ref(props.posts);
+const perPage = ref(5);
+const authUser = ref(null);
+const posts = ref({ data: [], prev_page_url: null, next_page_url: null, current_page: 1, last_page: 1 });
+
+//FETCH AUTHENTICATED USER
+axios.get('/api/auth-user')
+  .then(response => {
+    authUser.value = response.data;
+  })
+  .catch(error => {
+    console.error("Error fetching authenticated user:", error);
+  })
 
 // Watch for changes to perPage and reload the page
 watch(perPage, (newPerPage) => {
@@ -111,10 +106,9 @@ watch(filterText, (newFilterText) => {
 
 // Fetch posts based on filterText and perPage
 const fetchPosts = (page = 1) => {
-  axios.get('/search', {
+  axios.get('/api/posts', {
     params: {
       q: filterText.value,
-      type: 'post',
       per_page: perPage.value === 'All' ? 0 : perPage.value,
       page: page
     }
@@ -134,7 +128,7 @@ const goToPage = (page) => {
 };
 
 const handlePostClick = (post) => {
-  if (!props.authUser) {
+  if (!authUser.value) {
     warningMessage.value = "User not authenticated";
     return;
   }
@@ -153,7 +147,7 @@ const handlePostClick = (post) => {
 };
 
 const handleEditClick = (post) => {
-  if (!props.authUser) {
+  if (!authUser.value) {
     warningMessage.value = "User not authenticated";
     return; 
   }
@@ -170,4 +164,7 @@ const formatDate = (dateString) => {
     return 'N/A'; 
   }
 };
+
+// Fetch initial posts
+fetchPosts();
 </script>

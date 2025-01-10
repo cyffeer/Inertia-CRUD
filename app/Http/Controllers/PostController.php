@@ -19,21 +19,31 @@ class PostController extends Controller
     /**
      * Display a listing of the posts.
      */
-    public function index(Request $request)
+    public function index()
     {
-        $perPage = (int) $request->input('per_page', session('per_page', 5)); // Default to 5 items per page
-        session(['per_page' => $perPage]); // Store per_page in session
+        return Inertia::render('Post/Index', [
+            'csrf_token' => csrf_token(),
+            'meta_title' => 'Posts',
+        ]);
+    }
 
-        $postsQuery = Post::with('user');
+    public function getAuthenticatedUser()
+    {
+        return response()->json(Auth::user());
+    }
 
-        // Paginate with the selected per_page value
+    public function fetchPosts(Request $request)
+    {
+        $perPage = (int) $request->input('per_page', 5);
+        $query = $request->input('q', '');
+
+        $postsQuery = Post::with('user')
+            ->where('title', 'like', "{$query}%")
+            ->orWhere('body', 'like', "{$query}%");
+
         $posts = $postsQuery->paginate($perPage);
 
-        return Inertia::render('Post/Index', [
-            'posts' => $posts,
-            'authUser' => Auth::user(),
-            'perPage' => $perPage, // Pass the per_page value to the view
-        ]);
+        return response()->json($posts);
     }
 
     /**
